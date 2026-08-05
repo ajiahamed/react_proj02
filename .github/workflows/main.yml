@@ -1,0 +1,21 @@
+name: default-server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Runs on GitHub-hosted Ubuntu runner
+  demo-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create directory and file
+        run: |
+          mkdir -p test_dir_ubuntu
+          echo "Hello from Ubuntu Runner!" > test_dir_ubuntu/mytest.txt
+
+      - name: Verify file creation
+        run: |
+          ls -la test_dir_ubuntu
+          cat test_dir_ubuntu/mytest.txt
