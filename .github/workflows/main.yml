@@ -1,21 +1,48 @@
-name: default-server
+name: Deploy React App
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
 
 jobs:
-  # Job 1: Runs on GitHub-hosted Ubuntu runner
-  demo-ubuntu:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create directory and file
-        run: |
-          mkdir -p test_dir_ubuntu
-          echo "Hello from Ubuntu Runner!" > test_dir_ubuntu/mytest.txt
+  build-and-deploy:
+    runs-on: self-hosted
 
-      - name: Verify file creation
-        run: |
-          ls -la test_dir_ubuntu
-          cat test_dir_ubuntu/mytest.txt
+    env:
+      DEPLOY_PATH: /var/www/html
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Clear old deployment
+        run: rm -rf ${{ env.DEPLOY_PATH }}/*
+
+      - name: Copy new build to deploy path
+        run: cp -r dist/* ${{ env.DEPLOY_PATH }}/
+
+      - name: Fix ownership
+        run: sudo chown -R $(whoami):$(whoami) ${{ env.DEPLOY_PATH }}
+
+      - name: Reload nginx
+        run: sudo systemctl reload nginx
+
+      - name: Deployment summary
+        run: echo "✅ Deployed commit ${{ github.sha }} to ${{ env.DEPLOY_PATH }}"
