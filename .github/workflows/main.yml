@@ -38,8 +38,5 @@ jobs:
       - name: Copy new build to deploy path
         run: cp -r dist/* ${{ env.DEPLOY_PATH }}/
 
-      - name: Reload nginx
-        run: sudo systemctl reload nginx
-
       - name: Deployment summary
         run: echo "✅ Deployed commit ${{ github.sha }} to ${{ env.DEPLOY_PATH }}"
