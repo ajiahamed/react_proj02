@@ -38,9 +38,6 @@ jobs:
       - name: Copy new build to deploy path
         run: cp -r dist/* ${{ env.DEPLOY_PATH }}/
 
-      - name: Fix ownership
-        run: sudo chown -R $(whoami):$(whoami) ${{ env.DEPLOY_PATH }}
-
       - name: Reload nginx
         run: sudo systemctl reload nginx
 
